@@ -68,6 +68,7 @@ public class Main extends MouseAdapter {
 	Connection conn = null;
 	PreparedStatement pstmt = null;
 	ResultSet rs = null;
+	private JTextField keyField;
 
 	public void connect() {
 		try {
@@ -151,7 +152,11 @@ public class Main extends MouseAdapter {
 			
 			@Override
 			public void keyReleased(KeyEvent e) {
-				after_label.setText(after(textField.getText())); // 단일 치환 결과로 출력
+				if(keyField.getText().length() == 0) { // key가 없으면
+					after_label.setText(after(textField.getText(), 3)); // 기본키 : 3 치환 결과로 출력
+				} else {
+					after_label.setText(after(textField.getText(), Integer.parseInt(keyField.getText()))); // key만큼 미룸
+				}
 			}
 			
 			@Override
@@ -192,6 +197,7 @@ public class Main extends MouseAdapter {
 					pstmt.executeUpdate();
 					textField.setText(""); // 텍스트필드 초기화
 					after_label.setText("");
+					keyField.setText("");
 					System.out.println("DB 추가 성공");
 				} catch (Exception e) {
 					System.out.println("DB 추가 오류" + e);
@@ -202,6 +208,7 @@ public class Main extends MouseAdapter {
 		
 		
 		table = new JTable(model);
+		table.setBackground(Color.WHITE);
 		table.setFont(new Font("Sitka Small", Font.PLAIN, 20));
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN); // 컬럼 길이 자동
 		table.setAutoCreateRowSorter(true); // 컬럼 클릭시 행 자동 정렬 활성화
@@ -213,6 +220,33 @@ public class Main extends MouseAdapter {
 		scroll.setViewportView(table); // 스크롤 안에 테이블 보여주기
 		frmSavePassword.getContentPane().add(scroll);
 		
+		keyField = new JTextField();
+		keyField.setBounds(753, 31, 40, 27);
+		keyField.setColumns(10);
+		frmSavePassword.getContentPane().add(keyField);
+		
+		keyField.addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if(keyField.getText().length() == 0) { // key가 없으면
+					after_label.setText(after(textField.getText(), 3)); // 기본키 : 3 치환 결과로 출력
+				} else {
+					after_label.setText(after(textField.getText(), Integer.parseInt(keyField.getText()))); // key만큼 미룸
+				}
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+			}
+		});
+		JLabel lblKey = new JLabel("Key");
+		lblKey.setBounds(703, 34, 40, 21);
+		frmSavePassword.getContentPane().add(lblKey);
 		
 	}
 	
@@ -230,7 +264,7 @@ public class Main extends MouseAdapter {
 	}
 
 	// 단일 치환 코드
-	public String after(String s) {
+	public String after(String s, int n) {
 		String answer = "";
 	    int z = (int)'z'; // 122
 	    int Z = (int)'Z'; // 90
@@ -241,9 +275,9 @@ public class Main extends MouseAdapter {
 	      
 	    for(int i =0; i<temp.length; i++){ // 문자열 길이만큼 반복
 	        if(temp[i]>=a && temp[i]<=z){ // 소문자일 때
-	            temp[i] = (int)temp[i]+3 > z ? (char)(a+(int)temp[i]+3-z-1) : (char)((int)temp[i]+3); // 3 단어 미루기
+	            temp[i] = (int)temp[i]+n > z ? (char)(a+(int)temp[i]+n-z-1) : (char)((int)temp[i]+n); // key만큼 단어 미루기
 	        }else if(temp[i]>=A && temp[i]<=Z){ // 대문자일 때
-	            temp[i] = (int)temp[i]+3 > Z ? (char)(A+(int)temp[i]+3-Z-1) : (char)((int)temp[i]+3); 
+	            temp[i] = (int)temp[i]+n > Z ? (char)(A+(int)temp[i]+n-Z-1) : (char)((int)temp[i]+n); 
 	        }else{ //공백일 때
 	            temp[i]=temp[i];
 	        }
@@ -251,7 +285,4 @@ public class Main extends MouseAdapter {
 	    answer = new String(temp); // String으로 만들기
 	    return answer;
 	}
-	
-	
-	
 }
